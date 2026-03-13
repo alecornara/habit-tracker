@@ -1,23 +1,23 @@
-// server.js
-const express = require('express');
-const cors = require('cors');
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import authRoutes from "./routes/auth.js";
+import habitRoutes from "./routes/habits.js";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
+app.use("/api/habits", habitRoutes);
 
-// Datos de ejemplo
-const habits = [
-  { id: 1, name: 'Leer 10 minutos', completed: false },
-  { id: 2, name: 'Hacer ejercicio', completed: false },
-];
+mongoose.connect("mongodb://localhost:27017/habittracker")
+.then(() => console.log("MongoDB connected"));
 
-// Endpoint para obtener hábitos
-app.get('/habits', (req, res) => {
-  res.json(habits);
+app.get("/", (req, res) => {
+  res.send("Habit Tracker API running");
 });
 
-// Servidor escuchando
 app.listen(5000, () => {
-  console.log('Backend running on http://localhost:5000');
+  console.log("Server running on port 5000");
 });
