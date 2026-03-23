@@ -1,51 +1,61 @@
-import Head from "next/head";
-import { useSelector } from "react-redux";
+import { useState } from "react";
 
 export default function Home() {
 
-  const habits = useSelector((state) => state.habits.habits);
+  const [habitId, setHabitId] = useState("");
+  const [streak, setStreak] = useState(0);
+
+  const markDone = async () => {
+
+    const res = await fetch(`http://localhost:5000/api/habits/done/${habitId}`, {
+      method: "POST"
+    });
+
+    const data = await res.json();
+
+    setStreak(data.streak);
+  };
+
+  const progress = (streak / 66) * 100;
 
   return (
-    <>
-      <Head>
-        <title>Habit Tracker</title>
-        <meta name="description" content="Habit Tracker App" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+    <div className="flex flex-col items-center justify-center min-h-screen p-10">
 
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h1 className="text-4xl font-bold mb-6">
+        Habit Tracker
+      </h1>
 
-        <h1 className="text-4xl font-bold text-green-500 mb-8">
-          Habit Tracker
-        </h1>
+      <input
+        type="text"
+        placeholder="Habit ID"
+        value={habitId}
+        onChange={(e) => setHabitId(e.target.value)}
+        className="border p-2 mb-4"
+      />
 
-        <div className="bg-white shadow-md rounded-lg p-6 w-80">
+      <button
+        onClick={markDone}
+        className="bg-green-500 text-white px-4 py-2 rounded"
+      >
+        Done
+      </button>
 
-          {habits.map((habit) => (
-            <div
-              key={habit.id}
-              className="flex justify-between items-center mb-4"
-            >
-              <span>{habit.name}</span>
+      <div className="w-80 bg-gray-200 rounded-full h-6 mt-6">
 
-              <button className="bg-blue-500 text-white px-3 py-1 rounded">
-                Done
-              </button>
-            </div>
-          ))}
-
-          <div className="mt-6">
-            <p className="mb-2 font-semibold">Progress</p>
-
-            <div className="w-full bg-red-200 rounded-full h-4">
-              <div className="bg-green-500 h-4 rounded-full w-1/3"></div>
-            </div>
-
-          </div>
-
-        </div>
+        <div
+          className="h-6 rounded-full"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: progress < 50 ? "red" : "green"
+          }}
+        ></div>
 
       </div>
-    </>
+
+      <p className="mt-4 text-lg">
+        Streak: {streak} / 66 days
+      </p>
+
+    </div>
   );
 }
