@@ -1,28 +1,26 @@
 import express from "express";
 import Habit from "../models/Habit.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// crear hábito
-router.post("/", async (req, res) => {
+// crear hábito (PROTEGIDO)
+router.post("/", authMiddleware, async (req, res) => {
 
-  const { title, userId } = req.body;
+  const { title } = req.body;
 
   const habit = new Habit({
     title,
-    userId
+    userId: req.user.id // 👈 viene del token
   });
 
   await habit.save();
 
   res.json(habit);
-
 });
 
-export default router;
-
-// marcar hábito como completado
-router.post("/done/:id", async (req, res) => {
+// marcar hábito como completado (PROTEGIDO)
+router.post("/done/:id", authMiddleware, async (req, res) => {
 
   const habit = await Habit.findById(req.params.id);
 
@@ -40,7 +38,6 @@ router.post("/done/:id", async (req, res) => {
     } else if (diffDays > 1) {
       habit.streak = 1;
     }
-
   }
 
   habit.lastCompleted = today;
@@ -48,5 +45,12 @@ router.post("/done/:id", async (req, res) => {
   await habit.save();
 
   res.json(habit);
+});
 
+export default router;
+
+// obtener hábitos del usuario
+router.get("/", authMiddleware, async (req, res) => {
+  const habits = await Habit.find({ userId: req.user.id });
+  res.json(habits);
 });
