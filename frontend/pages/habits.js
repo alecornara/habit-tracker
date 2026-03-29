@@ -3,11 +3,22 @@ import { useState, useEffect } from "react";
 export default function Habits() {
   const [title, setTitle] = useState("");
   const [habits, setHabits] = useState([]);
+  const [token, setToken] = useState("");
 
-  const token = localStorage.getItem("token");
+  // ✅ Obtener token solo en cliente
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = localStorage.getItem("token");
+      setToken(storedToken);
+    }
+  }, []);
+
+  const API_URL = "https://habit-tracker-plum-one.vercel.app/api";
 
   const getHabits = async () => {
-    const res = await fetch("http://localhost:5000/api/habits", {
+    if (!token) return;
+
+    const res = await fetch(`${API_URL}/habits`, {
       headers: {
         Authorization: token
       }
@@ -18,7 +29,9 @@ export default function Habits() {
   };
 
   const createHabit = async () => {
-    await fetch("http://localhost:5000/api/habits", {
+    if (!token) return;
+
+    await fetch(`${API_URL}/habits`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,7 +45,9 @@ export default function Habits() {
   };
 
   const completeHabit = async (id) => {
-    await fetch(`http://localhost:5000/api/habits/done/${id}`, {
+    if (!token) return;
+
+    await fetch(`${API_URL}/habits/done/${id}`, {
       method: "POST",
       headers: {
         Authorization: token
@@ -42,9 +57,12 @@ export default function Habits() {
     getHabits();
   };
 
+  // ✅ Esperar a tener token
   useEffect(() => {
-    getHabits();
-  }, []);
+    if (token) {
+      getHabits();
+    }
+  }, [token]);
 
   return (
     <div>
