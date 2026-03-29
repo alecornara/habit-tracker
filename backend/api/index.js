@@ -11,5 +11,4 @@ app.get("/api", (req, res) => {
   res.send("Backend funcionando 🚀");
 });
 
-module.exports = app;
-module.exports.handler = serverless(app);
+module.exports = serverless(app);
